@@ -1,7 +1,25 @@
-Nsim	10000
+Nsim	50000
+n_perfile 30000
+
 Eb	10.6
-tLim	-1.2
-EgMin	4
+tMin	-0.8
+tMax	-0.15
+EgMin	4.
 EgMax	10.6
-Q2Cut	0.02
-LUND	1
+MinvMax	3.
+MinvMin	2.
+q2Cut	0.3
+target_l	5.
+target_off	-3.
+Dterm	2.
+
+Theta_elec_min	3.
+Theta_elec_max	45.
+P_elec_min	0.8
+
+Theta_posi_min	3.
+Theta_posi_max	45.
+P_posi_min	0.8
+
+write_lund	1
+write_root	1

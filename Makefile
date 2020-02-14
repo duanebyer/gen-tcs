@@ -29,3 +29,4 @@ KinFuncs.o: src/KinFunctions.cc include/KinFunctions.h
 
 clean:	    
 	    rm -f TCSGen.exe *.o lib/*.so.* lib/*.so
+	    
