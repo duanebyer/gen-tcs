@@ -9,18 +9,27 @@
 #include <TF2.h>
 #include "TTCSCrs.h"
 #include <TCanvas.h>
-#include <TMath.h>
+#include <TString.h>
+#include <TSystem.h>
 #include <KinFunctions.h>
 
 using namespace KinFuncs;
 
 TTCSCrs::TTCSCrs() {
+    TString dat="CFFs_DD_Feb2012.dat";
+    if (gSystem->AccessPathName(dat))
+        dat=gSystem->Getenv("TCSGEN_DIR")+TString("/")+dat;
+    
     f_BH = new TF2("f_BH", BH_crs_section, 0, 360, 0, 180, 4);
     f_INT = new TF2("f_INT", INT_crs_section, 0., 360., 0., 180., 12);
-    gp = new GPDs("CFFs_DD_Feb2012.dat", 17, 17, 9, 1.49, -0.20, 0.072);
+    gp = new GPDs(dat, 17, 17, 9, 1.49, -0.20, 0.072);
 }
 
 TTCSCrs::TTCSCrs(double a_s, double a_Q2, double a_t) {
+
+    TString dat="CFFs_DD_Feb2012.dat";
+    if (gSystem->AccessPathName(dat))
+        dat=gSystem->Getenv("TCSGEN_DIR")+TString("/")+dat;
 
     Set_SQ2t(a_s, a_Q2, a_t);
     iweight = -1;
@@ -29,8 +38,7 @@ TTCSCrs::TTCSCrs(double a_s, double a_Q2, double a_t) {
 
     f_INT = new TF2("f_INT", INT_crs_section, 0., 360., 0., 180., 12);
     double eta = iQ2 / (2 * (is - M_p * M_p) - iQ2);
-    gp = new GPDs("CFFs_DD_Feb2012.dat", 17, 17, 9, iQ2, it, eta);
-
+    gp = new GPDs(dat, 17, 17, 9, iQ2, it, eta);
     gp->Set_q2_t_eta(iQ2, it, eta);
 }
 

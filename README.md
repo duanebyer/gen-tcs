@@ -14,6 +14,7 @@ Just type make
 
 If make is successful, then make sure the lib directory, i.e. `pwd`/lib is in the $LD_LIBRARY_PATH
 
+To run from an arbitrary location, $TSCGEN_DIR must be set to this repo's directory.
 
 ======================================================================================
 
