@@ -1,25 +1,26 @@
-Nsim	50000
-n_perfile 30000
+seed      0
+Nsim	  100000000
 
-Eb	10.6
-tMin	-0.8
-tMax	-0.15
-EgMin	4.
-EgMax	10.6
-MinvMax	3.
-MinvMin	2.
-q2Cut	0.3
-target_l	5.
-target_off	-3.
-Dterm	2.
+target deuteron
 
-Theta_elec_min	3.
-Theta_elec_max	45.
-P_elec_min	0.8
+Eb	         8.5
+tMin     -1000.0
+tMax      1000.0
+EgMin        0
+EgMax	  1000.0
+MinvMin      2.8
+MinvMax      10.0
+q2Cut	     0.05
+target_l    15.0
+target_off   0.0
+Dterm        2.0
 
-Theta_posi_min	3.
-Theta_posi_max	45.
-P_posi_min	0.8
+Theta_elec_min   0.0
+Theta_elec_max 180.0
+P_elec_min       0.0
 
-write_lund	1
-write_root	1
+Theta_posi_min   0.0
+Theta_posi_max 180.0
+P_posi_min       0.0
+
+write_root 1

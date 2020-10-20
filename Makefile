@@ -1,13 +1,13 @@
-CC              = g++ -std=c++11
+CC              = g++ -std=c++11 -Wall
 CC_OBJ_FLAGS    = -c -fPIC
 CC_Shared_FLAGS = -shared -Wl,-soname,libTCSGen.so
 ROOT_CFLAGS     = $(shell ${ROOTSYS}/bin/root-config --cflags)
 ROOT_LIBS       = $(shell ${ROOTSYS}/bin/root-config --libs)
 libTCSGEN	= libTCSGen
 
-all:	    TCSGen.cc TTCSKine.o KinFuncs.o TTCSCrs.o GPDs.o
+all:	    TCSGen.cc TTCSKine.o KinFuncs.o CrsFuncs.o TTCSCrs.o GPDs.o
 	    mkdir -p lib ; rm -f lib/*.so
-	    $(CC) $(CC_Shared_FLAGS) -o lib/${libTCSGEN}.so.1.0.1 TTCSKine.o KinFuncs.o TTCSCrs.o GPDs.o
+	    $(CC) $(CC_Shared_FLAGS) -o lib/${libTCSGEN}.so.1.0.1 TTCSKine.o KinFuncs.o CrsFuncs.o TTCSCrs.o GPDs.o
 	    cd lib;\
 	    ln -sf ${libTCSGEN}.so.1.0.1 ${libTCSGEN}.so.1; ln -sf ${libTCSGEN}.so.1.0.1 ${libTCSGEN}.so
 	    cd ../;
@@ -24,6 +24,9 @@ TTCSCrs.o:  src/TTCSCrs.cc include/TTCSCrs.h GPDs.o
 	
 KinFuncs.o: src/KinFunctions.cc include/KinFunctions.h
 	    $(CC) $(CC_OBJ_FLAGS) src/KinFunctions.cc -o $@ -I ./include
+
+CrsFuncs.o: src/CrsFunctions.cc include/CrsFunctions.h
+	    $(CC) $(CC_OBJ_FLAGS) src/CrsFunctions.cc -o $@ -I ./include
 
 
 
