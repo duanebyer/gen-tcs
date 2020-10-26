@@ -1,5 +1,6 @@
 CXX=g++
 OBJDIR=build
+DATADIR=data
 BINDIR=bin
 SRCDIR=src
 INCDIR=include
@@ -8,19 +9,25 @@ ROOTFLAGS=$(shell ${ROOTSYS}/bin/root-config --cflags)
 ROOTLIBS=$(shell ${ROOTSYS}/bin/root-config --libs)
 CXXFLAGS=-std=c++11 -Wall -I./$(INCDIR)
 
+.PHONY: all
+all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat $(BINDIR)/GenOptions.dat $(BINDIR)/CFFs_DD_Feb2012.dat
+
 .PHONY: clean
 clean:
 	rm -rf $(OBJDIR)/*
 	rm -rf $(BINDIR)/*
-
-.PHONY: all
-all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat
 
 $(BINDIR)/tcs-gen: $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/tcs-gen $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o
 
 $(BINDIR)/root-to-dat: $(SRCDIR)/RootToDat.cc
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/root-to-dat $(SRCDIR)/RootToDat.cc
+
+$(BINDIR)/CFFs_DD_Feb2012.dat: $(DATADIR)/CFFs_DD_Feb2012.dat
+	cp $(DATADIR)/CFFs_DD_Feb2012.dat $(BINDIR)/CFFs_DD_Feb2012.dat
+
+$(BINDIR)/GenOptions.dat: $(DATADIR)/GenOptionsStandard.dat
+	cp $(DATADIR)/GenOptionsStandard.dat $(BINDIR)/GenOptions.dat
 
 $(OBJDIR)/TTCSKine.o: $(SRCDIR)/TTCSKine.cc $(INCDIR)/TTCSKine.h
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -c -o $(OBJDIR)/TTCSKine.o $(SRCDIR)/TTCSKine.cc
