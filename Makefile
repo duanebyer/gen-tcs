@@ -1,34 +1,39 @@
-CC              = g++ -std=c++11 -Wall
-CC_OBJ_FLAGS    = -c -fPIC
-CC_Shared_FLAGS = -shared -Wl,-soname,libTCSGen.so
-ROOT_CFLAGS     = $(shell ${ROOTSYS}/bin/root-config --cflags)
-ROOT_LIBS       = $(shell ${ROOTSYS}/bin/root-config --libs)
-libTCSGEN	= libTCSGen
+CXX=g++
+OBJDIR=build
+BINDIR=bin
+SRCDIR=src
+INCDIR=include
 
-all:	    TCSGen.cc TTCSKine.o KinFuncs.o CrsFuncs.o TTCSCrs.o GPDs.o
-	    mkdir -p lib ; rm -f lib/*.so
-	    $(CC) $(CC_Shared_FLAGS) -o lib/${libTCSGEN}.so.1.0.1 TTCSKine.o KinFuncs.o CrsFuncs.o TTCSCrs.o GPDs.o
-	    cd lib;\
-	    ln -sf ${libTCSGEN}.so.1.0.1 ${libTCSGEN}.so.1; ln -sf ${libTCSGEN}.so.1.0.1 ${libTCSGEN}.so
-	    cd ../;
-	    $(CC) -o TCSGen.exe TCSGen.cc -I ./include -L./lib -lTCSGen $(ROOT_CFLAGS) $(ROOT_LIBS)
-	
-TTCSKine.o: src/TTCSKine.cc include/TTCSKine.h
-	    $(CC) $(CC_OBJ_FLAGS) src/TTCSKine.cc -o $@ $(ROOT_CFLAGS) -I ./include
-	
-GPDs.o:	    src/GPDs.cc include/GPDs.h
-	    $(CC) $(CC_OBJ_FLAGS) src/GPDs.cc -o $@ $(ROOT_CFLAGS) -I ./include
+ROOTFLAGS=$(shell ${ROOTSYS}/bin/root-config --cflags)
+ROOTLIBS=$(shell ${ROOTSYS}/bin/root-config --libs)
+CXXFLAGS=-std=c++11 -Wall -I./$(INCDIR)
 
-TTCSCrs.o:  src/TTCSCrs.cc include/TTCSCrs.h GPDs.o
-	    $(CC) $(CC_OBJ_FLAGS) src/TTCSCrs.cc -o $@ $(ROOT_CFLAGS) -I ./include 
-	
-KinFuncs.o: src/KinFunctions.cc include/KinFunctions.h
-	    $(CC) $(CC_OBJ_FLAGS) src/KinFunctions.cc -o $@ -I ./include
+.PHONY: clean
+clean:
+	rm -rf $(OBJDIR)/*
+	rm -rf $(BINDIR)/*
 
-CrsFuncs.o: src/CrsFunctions.cc include/CrsFunctions.h
-	    $(CC) $(CC_OBJ_FLAGS) src/CrsFunctions.cc -o $@ -I ./include
+.PHONY: all
+all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat
 
+$(BINDIR)/tcs-gen: $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/tcs-gen $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o
 
+$(BINDIR)/root-to-dat: $(SRCDIR)/RootToDat.cc
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/root-to-dat $(SRCDIR)/RootToDat.cc
 
-clean:	    
-	    rm -f TCSGen.exe *.o lib/*.so.* lib/*.so
+$(OBJDIR)/TTCSKine.o: $(SRCDIR)/TTCSKine.cc $(INCDIR)/TTCSKine.h
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -c -o $(OBJDIR)/TTCSKine.o $(SRCDIR)/TTCSKine.cc
+
+$(OBJDIR)/GPDs.o: $(SRCDIR)/GPDs.cc $(INCDIR)/GPDs.h
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -c -o $(OBJDIR)/GPDs.o $(SRCDIR)/GPDs.cc
+
+$(OBJDIR)/TTCSCrs.o: $(SRCDIR)/TTCSCrs.cc $(INCDIR)/TTCSCrs.h $(OBJDIR)/GPDs.o
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -c -o $(OBJDIR)/TTCSCrs.o $(SRCDIR)/TTCSCrs.cc $(OBJDIR)/GPDs.o
+
+$(OBJDIR)/KinFunctions.o: $(SRCDIR)/KinFunctions.cc $(INCDIR)/KinFunctions.h
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/KinFunctions.o $(SRCDIR)/KinFunctions.cc
+
+$(OBJDIR)/CrsFunctions.o: $(SRCDIR)/CrsFunctions.cc $(INCDIR)/CrsFunctions.h
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/CrsFunctions.o $(SRCDIR)/CrsFunctions.cc
+
