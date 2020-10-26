@@ -56,7 +56,8 @@ int main(int argc, char** argv) {
 	for (Int_t event_idx = 0; event_idx < event_count; ++event_idx) {
 		events->GetEntry(event_idx);
 		Double_t N_ratio = (Double_t) Nsim / (Double_t) Nsim_tot;
-		Double_t weight = crs_BH * psf * (flux_brem + flux_factor) * N_ratio;
+		// Convert the weight to use GeV^-2 instead of pb.
+		Double_t weight = crs_BH * psf * (flux_brem + flux_factor) * N_ratio * 2.56819e-9;
 		TLorentzVector L_q(0., 0., Eg, Eg);
 		file_out << weight << std::endl;
 		file_out << "q:\t" << L_q.X() << '\t' << L_q.Y() << '\t' << L_q.Z() << '\t' << L_q.T() << std::endl;
