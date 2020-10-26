@@ -10,7 +10,7 @@ ROOTLIBS=$(shell ${ROOTSYS}/bin/root-config --libs)
 CXXFLAGS=-std=c++11 -Wall -I./$(INCDIR)
 
 .PHONY: all
-all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat $(BINDIR)/GenOptions.dat $(BINDIR)/CFFs_DD_Feb2012.dat
+all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat $(BINDIR)/brem-compare $(BINDIR)/GenOptions.dat $(BINDIR)/CFFs_DD_Feb2012.dat
 
 .PHONY: clean
 clean:
@@ -22,6 +22,9 @@ $(BINDIR)/tcs-gen: $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctio
 
 $(BINDIR)/root-to-dat: $(SRCDIR)/RootToDat.cc
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/root-to-dat $(SRCDIR)/RootToDat.cc
+
+$(BINDIR)/brem-compare: $(SRCDIR)/BremCompare.cc $(OBJDIR)/KinFunctions.o
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/brem-compare $(SRCDIR)/BremCompare.cc $(OBJDIR)/KinFunctions.o
 
 $(BINDIR)/CFFs_DD_Feb2012.dat: $(DATADIR)/CFFs_DD_Feb2012.dat
 	cp $(DATADIR)/CFFs_DD_Feb2012.dat $(BINDIR)/CFFs_DD_Feb2012.dat

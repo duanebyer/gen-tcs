@@ -10,7 +10,8 @@
 // Converts a file from a .root format to a .dat format.
 int main(int argc, char** argv) {
 	if (argc != 3) {
-		std::cout << "Usage: RootToDat <file in> <file out>" << std::endl;
+		std::cout << "Usage: root-to-dat <file in> <file out>" << std::endl;
+		return 1;
 	}
 	TFile* file_in = new TFile(argv[1], "READ");
 	if (file_in->IsZombie()) {
@@ -34,10 +35,10 @@ int main(int argc, char** argv) {
 	file_out << "Ebeam=" << Eb << "GeV" << ",";
 	file_out << "Nsim= " << Nsim << std::endl;
 
-	TLorentzVector L_em;
-	TLorentzVector L_ep;
-	TLorentzVector L_prot;
-	Double_t E_g;
+	TLorentzVector* L_em = nullptr;
+	TLorentzVector* L_ep = nullptr;
+	TLorentzVector* L_prot = nullptr;
+	Double_t Eg;
 	Double_t psf;
 	Double_t flux_factor;
 	Double_t flux_brem;
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
 	events->SetBranchAddress("L_em", &L_em);
 	events->SetBranchAddress("L_ep", &L_ep);
 	events->SetBranchAddress("L_prot", &L_prot);
-	events->SetBranchAddress("E_g", &E_g);
+	events->SetBranchAddress("Eg", &Eg);
 	events->SetBranchAddress("psf", &psf);
 	events->SetBranchAddress("flux_factor", &flux_factor);
 	events->SetBranchAddress("flux_brem", &flux_brem);
@@ -56,12 +57,12 @@ int main(int argc, char** argv) {
 		events->GetEntry(event_idx);
 		Double_t N_ratio = (Double_t) Nsim / (Double_t) Nsim_tot;
 		Double_t weight = crs_BH * psf * (flux_brem + flux_factor) * N_ratio;
-		TLorentzVector L_q(E_g, 0., 0., E_g);
+		TLorentzVector L_q(0., 0., Eg, Eg);
 		file_out << weight << std::endl;
 		file_out << "q:\t" << L_q.X() << '\t' << L_q.Y() << '\t' << L_q.Z() << '\t' << L_q.T() << std::endl;
-		file_out << "e+:\t" << L_ep.X() << '\t' << L_ep.Y() << '\t' << L_ep.Z() << '\t' << L_ep.T() << std::endl;
-		file_out << "e-:\t" << L_em.X() << '\t' << L_em.Y() << '\t' << L_em.Z() << '\t' << L_em.T() << std::endl;
-		file_out << "p:\t" << L_prot.X() << '\t' << L_prot.Y() << '\t' << L_prot.Z() << '\t' << L_prot.T() << std::endl;
+		file_out << "e+:\t" << L_ep->X() << '\t' << L_ep->Y() << '\t' << L_ep->Z() << '\t' << L_ep->T() << std::endl;
+		file_out << "e-:\t" << L_em->X() << '\t' << L_em->Y() << '\t' << L_em->Z() << '\t' << L_em->T() << std::endl;
+		file_out << "p:\t" << L_prot->X() << '\t' << L_prot->Y() << '\t' << L_prot->Z() << '\t' << L_prot->T() << std::endl;
 	}
 
 	return 0;
