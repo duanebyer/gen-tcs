@@ -7,10 +7,10 @@ INCDIR=include
 
 ROOTFLAGS=$(shell ${ROOTSYS}/bin/root-config --cflags)
 ROOTLIBS=$(shell ${ROOTSYS}/bin/root-config --libs)
-CXXFLAGS=-std=c++11 -Wall -I./$(INCDIR)
+CXXFLAGS=-std=c++11 -Wall -O3 -I./$(INCDIR)
 
 .PHONY: all
-all: $(BINDIR)/tcs-gen $(BINDIR)/root-to-dat $(BINDIR)/brem-compare $(BINDIR)/integrate $(BINDIR)/GenOptions.dat $(BINDIR)/CFFs_DD_Feb2012.dat
+all: $(BINDIR)/tcs-gen $(BINDIR)/params-inspect $(BINDIR)/root-to-dat $(BINDIR)/brem-compare $(BINDIR)/integrate $(BINDIR)/GenOptions.dat $(BINDIR)/CFFs_DD_Feb2012.dat
 
 .PHONY: clean
 clean:
@@ -24,6 +24,9 @@ $(BINDIR):
 
 $(BINDIR)/tcs-gen: $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/tcs-gen $(SRCDIR)/TCSGen.cc $(OBJDIR)/TTCSKine.o $(OBJDIR)/KinFunctions.o $(OBJDIR)/CrsFunctions.o $(OBJDIR)/TTCSCrs.o $(OBJDIR)/GPDs.o
+
+$(BINDIR)/params-inspect: $(SRCDIR)/ParamsInspect.cc | $(BINDIR)
+	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/params-inspect $(SRCDIR)/ParamsInspect.cc
 
 $(BINDIR)/root-to-dat: $(SRCDIR)/RootToDat.cc | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) $(ROOTLIBS) -o $(BINDIR)/root-to-dat $(SRCDIR)/RootToDat.cc
