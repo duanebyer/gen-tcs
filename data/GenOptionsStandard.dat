@@ -22,5 +22,3 @@ P_elec_min       0.0
 Theta_posi_min   0.0
 Theta_posi_max 180.0
 P_posi_min       0.0
-
-write_root 1

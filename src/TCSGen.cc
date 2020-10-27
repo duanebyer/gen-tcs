@@ -72,9 +72,9 @@ int main(int argc, char** argv) {
 
 	// Treat target as deuteron.
 	Target target_type = Target::PROTON;
-	if (m_Settings.at("target") == "proton") {
+	if (m_Settings.at("target") == "proton" || m_Settings.at("target") == "0") {
 		target_type = Target::PROTON;
-	} else if (m_Settings.at("target") == "deuteron") {
+	} else if (m_Settings.at("target") == "deuteron" || m_Settings.at("target") == "1") {
 		target_type = Target::DEUTERON;
 	} else {
 		std::cout << "Invalid target type \'" << m_Settings.at("target") << "\'." << std::endl;
@@ -95,9 +95,6 @@ int main(int argc, char** argv) {
 	double Theta_posi_min = std::stod(m_Settings.at("Theta_posi_min"));;
 	double Theta_posi_max = std::stod(m_Settings.at("Theta_posi_max"));;
 	double P_posi_min     = std::stod(m_Settings.at("P_posi_min"));;
-
-	// Whether to write a ROOT file.
-	bool write_root       = std::stoi(m_Settings.at("write_root"));
 
 	// Parameters to be stored in the file for later reference.
 	TParameter<Int_t> param_seed("seed", seed);
@@ -126,7 +123,7 @@ int main(int argc, char** argv) {
 	std::cout << "Random seed: " << seed << std::endl;
 	std::cout << "Test random number: " << rand.Uniform(0, 1) << std::endl;
 
-	TFile* file_out = new TFile("tcs_gen.root", "Recreate");
+	TFile* file_out = new TFile("tcs-gen.root", "Recreate");
 
 	TH2D *h_ph_h_ph_cm1 = new TH2D("h_ph_h_ph_cm1", "", 200, 0., 360., 200, 0., 360.);
 	TH2D *h_th_g_th_cm1 = new TH2D("h_th_g_th_cm1", "", 200, 0., 180., 200, 0., 180.);
@@ -143,6 +140,9 @@ int main(int argc, char** argv) {
 	TTree* events = new TTree("tr1", "TCS MC events");
 	events->Branch("L_em", "TLorentzVector", &L_em, 3200);
 	events->Branch("L_ep", "TLorentzVector", &L_ep, 3200);
+	events->Branch("L_g", "TLorentzVector", &L_g, 3200);
+	events->Branch("L_k", "TLorentzVector", &L_kprime, 3200);
+	events->Branch("L_k_i", "TLorentzVector", &L_k, 3200);
 	events->Branch("L_prot", "TLorentzVector", &L_pprime, 3200);
 	events->Branch("L_prot_i", "TLorentzVector", &L_p, 3200);
 	events->Branch("Eg", &Eg, "Eg/D");
@@ -191,12 +191,13 @@ int main(int argc, char** argv) {
 		L_k.SetPxPyPzE(0., 0., TMath::Sqrt(Sq(Eb_user) - Sq(ELECTRON_MASS)), Eb_user);
 
 		// Transform into target frame.
-		TVector3 target_boost = -L_p.BoostVector();
-		TRotation target_rotation;
+		TVector3 target_boost_inv = L_p.BoostVector();
+		TVector3 target_boost = -target_boost_inv;
+		TRotation target_rotation, target_rotation_inv;
 		L_k.Boost(target_boost);
 		L_p.Boost(target_boost);
-		target_rotation.SetZAxis(L_k.Vect());
-		target_rotation.Invert();
+		target_rotation_inv.SetZAxis(L_k.Vect());
+		target_rotation = target_rotation_inv.Inverse();
 		L_k.Transform(target_rotation);
 		L_p.Transform(target_rotation);
 		double Eb = L_k.E();
@@ -205,11 +206,26 @@ int main(int argc, char** argv) {
 		double Mp2 = Mp*Mp;
 		double Mpprime2 = Mpprime*Mpprime;
 
+		// Find the direction of the photon in the lab frame.
+		TLorentzVector L_g_dir(0., 0., 1., 1.);
+		L_g_dir.Transform(target_rotation_inv);
+		L_g_dir.Boost(target_boost_inv);
+		// Then set the energy bounds in the lab frame and transform back.
+		TLorentzVector L_g_minUser = Eg_minUser * L_g_dir;
+		TLorentzVector L_g_maxUser = Eg_maxUser * L_g_dir;
+		L_g_minUser.Boost(target_boost);
+		L_g_maxUser.Boost(target_boost);
+		L_g_minUser.Transform(target_rotation);
+		L_g_maxUser.Transform(target_rotation);
+		// Find the new energy bounds in the target frame.
+		Eg_minUser = L_g_minUser.E();
+		Eg_maxUser = L_g_maxUser.E();
+
 		// The beam energy provides the kinematic limit on Eg.
 		double Eg_minKine = 0.;
 		double Eg_min = TMath::Max(Eg_minKine, Eg_minUser);
 		double Eg_maxKine = Eb;
-		double Eg_max = TMath::Min(Eg_maxUser, Eg_maxKine);
+		double Eg_max = TMath::Min(Eg_maxKine, Eg_maxUser);
 		double psf_Eg = Eg_max - Eg_min;
 		Eg = rand.Uniform(Eg_min, Eg_max);
 
@@ -373,15 +389,21 @@ int main(int argc, char** argv) {
 		
 		// Move to the lab frame from target frame.
 		// TODO: Should all momenta be included in here?
-		L_p.Transform(target_rotation.Inverse());
-		L_pprime.Transform(target_rotation.Inverse());
-		L_em.Transform(target_rotation.Inverse());
-		L_ep.Transform(target_rotation.Inverse());
+		L_p.Transform(target_rotation_inv);
+		L_pprime.Transform(target_rotation_inv);
+		L_em.Transform(target_rotation_inv);
+		L_ep.Transform(target_rotation_inv);
+		L_k.Transform(target_rotation_inv);
+		L_kprime.Transform(target_rotation_inv);
+		L_g.Transform(target_rotation_inv);
 
-		L_p.Boost(-target_boost);
-		L_pprime.Boost(-target_boost);
-		L_em.Boost(-target_boost);
-		L_ep.Boost(-target_boost);
+		L_p.Boost(target_boost_inv);
+		L_pprime.Boost(target_boost_inv);
+		L_em.Boost(target_boost_inv);
+		L_ep.Boost(target_boost_inv);
+		L_k.Boost(target_boost_inv);
+		L_kprime.Boost(target_boost_inv);
+		L_g.Boost(target_boost_inv);
 
 		bool elec_in_bounds =
 			L_em.Theta() * TMath::RadToDeg() >= Theta_elec_min
@@ -416,9 +438,7 @@ int main(int argc, char** argv) {
 		}
 		event_idx += 1;
 
-		if (write_root) {
-			events->Fill();
-		}
+		events->Fill();
 	}
 
 	events->Write();

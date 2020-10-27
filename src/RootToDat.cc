@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
 	TLorentzVector* L_em = nullptr;
 	TLorentzVector* L_ep = nullptr;
 	TLorentzVector* L_prot = nullptr;
+	TLorentzVector* L_g = nullptr;
 	Double_t Eg;
 	Double_t psf;
 	Double_t flux_factor;
@@ -46,6 +47,7 @@ int main(int argc, char** argv) {
 	events->SetBranchAddress("L_em", &L_em);
 	events->SetBranchAddress("L_ep", &L_ep);
 	events->SetBranchAddress("L_prot", &L_prot);
+	events->SetBranchAddress("L_g", &L_g);
 	events->SetBranchAddress("Eg", &Eg);
 	events->SetBranchAddress("psf", &psf);
 	events->SetBranchAddress("flux_factor", &flux_factor);
@@ -58,9 +60,8 @@ int main(int argc, char** argv) {
 		Double_t N_ratio = (Double_t) Nsim / (Double_t) Nsim_tot;
 		// Convert the weight to use GeV^-2 instead of pb.
 		Double_t weight = crs_BH * psf * (flux_brem + flux_factor) * N_ratio * 2.56819e-9;
-		TLorentzVector L_q(0., 0., Eg, Eg);
 		file_out << weight << std::endl;
-		file_out << "q:\t" << L_q.X() << '\t' << L_q.Y() << '\t' << L_q.Z() << '\t' << L_q.T() << std::endl;
+		file_out << "q:\t" << L_g->X() << '\t' << L_g->Y() << '\t' << L_g->Z() << '\t' << L_g->T() << std::endl;
 		file_out << "e+:\t" << L_ep->X() << '\t' << L_ep->Y() << '\t' << L_ep->Z() << '\t' << L_ep->T() << std::endl;
 		file_out << "e-:\t" << L_em->X() << '\t' << L_em->Y() << '\t' << L_em->Z() << '\t' << L_em->T() << std::endl;
 		file_out << "p:\t" << L_prot->X() << '\t' << L_prot->Y() << '\t' << L_prot->Z() << '\t' << L_prot->T() << std::endl;
