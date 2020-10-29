@@ -206,26 +206,26 @@ int main(int argc, char** argv) {
 		double Mp2 = Mp*Mp;
 		double Mpprime2 = Mpprime*Mpprime;
 
-		// Find the direction of the photon in the lab frame.
+		// Find the direction of the photon in the target frame.
 		TLorentzVector L_g_dir(0., 0., 1., 1.);
 		L_g_dir.Transform(target_rotation_inv);
 		L_g_dir.Boost(target_boost_inv);
 		// Then set the energy bounds in the lab frame and transform back.
-		TLorentzVector L_g_minUser = Eg_minUser * L_g_dir;
-		TLorentzVector L_g_maxUser = Eg_maxUser * L_g_dir;
+		TLorentzVector L_g_minUser = (Eg_minUser / L_g_dir.E()) * L_g_dir;
+		TLorentzVector L_g_maxUser = (Eg_maxUser / L_g_dir.E()) * L_g_dir;
 		L_g_minUser.Boost(target_boost);
 		L_g_maxUser.Boost(target_boost);
 		L_g_minUser.Transform(target_rotation);
 		L_g_maxUser.Transform(target_rotation);
 		// Find the new energy bounds in the target frame.
-		Eg_minUser = L_g_minUser.E();
-		Eg_maxUser = L_g_maxUser.E();
+		double Eg_minUser_targ = L_g_minUser.E();
+		double Eg_maxUser_targ = L_g_maxUser.E();
 
 		// The beam energy provides the kinematic limit on Eg.
 		double Eg_minKine = 0.;
-		double Eg_min = TMath::Max(Eg_minKine, Eg_minUser);
+		double Eg_min = TMath::Max(Eg_minKine, Eg_minUser_targ);
 		double Eg_maxKine = Eb;
-		double Eg_max = TMath::Min(Eg_maxKine, Eg_maxUser);
+		double Eg_max = TMath::Min(Eg_maxKine, Eg_maxUser_targ);
 		double psf_Eg = Eg_max - Eg_min;
 		Eg = rand.Uniform(Eg_min, Eg_max);
 
