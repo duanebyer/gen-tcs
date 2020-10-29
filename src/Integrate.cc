@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
 	events->SetBranchAddress("crs_BH", &crs_BH);
 
 	Int_t event_count = events->GetEntries();
+	Int_t event_inc_count = 0;
 	Double_t total_rate = 0.;
 	for (Int_t event_idx = 0; event_idx < event_count; ++event_idx) {
 		events->GetEntry(event_idx);
@@ -52,10 +53,12 @@ int main(int argc, char** argv) {
 		if (M_ll >= M_ll_lower && M_ll <= M_ll_upper) {
 			Double_t rate = crs_BH * psf * (flux_factor + flux_brem) * luminosity * CROSS_SECTION_TO_HOURLY_RATE / Nsim_tot;
 			total_rate += rate;
+			event_inc_count += 1;
 		}
 	}
 
 	std::cout << "Total rate: " << total_rate << " counts / hour" << std::endl;
+	std::cout << "Events included: " << event_inc_count << std::endl;
 	return 0;
 }
 
